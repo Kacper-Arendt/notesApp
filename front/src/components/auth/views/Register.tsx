@@ -28,6 +28,8 @@ export const Register = () => {
     const {fields, handleChange, reset} = useField(initialState);
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
+    
+    
 
     return (
         <Wrapper>

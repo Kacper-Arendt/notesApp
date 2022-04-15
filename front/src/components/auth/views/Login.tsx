@@ -1,10 +1,11 @@
-import {useState} from "react";
+import {useState, SyntheticEvent} from "react";
 import styled from "styled-components";
 import {Button, Heading, Input, InputGroup, InputRightElement, Link} from '@chakra-ui/react'
-import {Link as RouterLink} from "react-router-dom";
+import {Link as RouterLink, useNavigate} from "react-router-dom";
 
 import {useField} from "hooks";
 import {Wrapper} from "components/auth/section/Wrapper";
+import axios from "axios";
 
 const StyledForm = styled.form`
   display: flex;
@@ -27,46 +28,69 @@ export const Login = () => {
     const {fields, handleChange, reset} = useField(initialState);
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate()
+
+    const onSubmitHandler = async (e: SyntheticEvent) => {
+        e.preventDefault();
+        try {
+            setLoading(true);
+            const request = await axios.post('http://localhost:3000/login', fields)
+
+            if (request) {
+                const {token, username, name} = request.data;
+                localStorage.setItem('token', token)
+                localStorage.setItem('username', username)
+                localStorage.setItem('name', name)
+                navigate('/')
+            }
+        } catch (e) {
+            console.log(e)
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <Wrapper>
-        <StyledForm>
-            <Heading as='h4' size='md'>
-                Sign in
-            </Heading>
-            <Input
-                name='username'
-                value={fields.username}
-                onChange={handleChange}
-                placeholder='Username' 
-                size='md'
-            />
-            <InputGroup size='md'>
+            <StyledForm onSubmit={onSubmitHandler}>
+                <Heading as='h4' size='md'>
+                    Sign in
+                </Heading>
                 <Input
-                    name='password'
-                    value={fields.password}
+                    name='username'
+                    value={fields.username}
                     onChange={handleChange}
-                    pr='4.5rem'
-                    type={show ? 'text' : 'password'}
-                    placeholder='Enter password'
+                    placeholder='Username'
+                    size='md'
                 />
-                <InputRightElement width='4.5rem'>
-                    <Button h='1.75rem' size='sm' onClick={() => setShow(!show)}>
-                        {show ? 'Hide' : 'Show'}
-                    </Button>
-                </InputRightElement>
-            </InputGroup>
-            <Button isLoading={loading}
+                <InputGroup size='md'>
+                    <Input
+                        name='password'
+                        value={fields.password}
+                        onChange={handleChange}
+                        pr='4.5rem'
+                        type={show ? 'text' : 'password'}
+                        placeholder='Enter password'
+                    />
+                    <InputRightElement width='4.5rem'>
+                        <Button h='1.75rem' size='sm' onClick={() => setShow(!show)}>
+                            {show ? 'Hide' : 'Show'}
+                        </Button>
+                    </InputRightElement>
+                </InputGroup>
+                <Button
+                    type='submit'
+                    isLoading={loading}
                     loadingText='Logging'
                     colorScheme='teal'
                     size='lg'
-            >
-                Login
-            </Button>
-            <Link as={RouterLink}  to='/register'>
-                Don't have account?
-            </Link>
-        </StyledForm>
+                >
+                    Login
+                </Button>
+                <Link as={RouterLink} to='/register'>
+                    Don't have account?
+                </Link>
+            </StyledForm>
         </Wrapper>
     )
 }
