@@ -37,10 +37,11 @@ export const Login = () => {
             const request = await axios.post('http://localhost:3000/login', fields)
 
             if (request) {
-                const {token, username, name} = request.data;
+                const {token, username, name, id} = request.data;
                 localStorage.setItem('token', token)
                 localStorage.setItem('username', username)
                 localStorage.setItem('name', name)
+                localStorage.setItem('id', id)
                 navigate('/')
             }
         } catch (e) {
