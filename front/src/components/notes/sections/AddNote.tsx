@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import {useField} from "hooks";
 import {useAddNoteMutation} from "redux/slices/notes/NotesApi";
-import {SyntheticEvent} from "react";
+import {SyntheticEvent, useEffect} from "react";
 
 const StyledForm = styled.form`
   width: 100%;
@@ -32,8 +32,8 @@ const initialState = {
 }
 
 export const AddNote = () => {
-    const {fields, handleChange, setFields} = useField(initialState);
-    const [addNote, {isLoading}] = useAddNoteMutation();
+    const {fields, handleChange, setFields, reset} = useField(initialState);
+    const [addNote, {isLoading, isSuccess}] = useAddNoteMutation();
 
     const checkboxHandler = () => {
         setFields({
@@ -46,6 +46,10 @@ export const AddNote = () => {
         e.preventDefault();
         fields.content.length > 0 && await addNote(fields)
     }
+    
+    useEffect(() => {
+        isSuccess && reset()
+    }, [isSuccess])
 
     return (
         <StyledForm onSubmit={onSubmitHandler}>

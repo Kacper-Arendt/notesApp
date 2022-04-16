@@ -1,11 +1,11 @@
-import {useState, SyntheticEvent} from "react";
+import {useState, SyntheticEvent, useEffect} from "react";
 import styled from "styled-components";
 import {Button, Heading, Input, InputGroup, InputRightElement, Link} from '@chakra-ui/react'
 import {Link as RouterLink, useNavigate} from "react-router-dom";
 
 import {useField} from "hooks";
 import {Wrapper} from "components/auth/section/Wrapper";
-import axios from "axios";
+import {useRegisterMutation} from "redux/slices/auth/AuthApi";
 
 const StyledForm = styled.form`
   display: flex;
@@ -28,21 +28,22 @@ const initialState = {
 export const Register = () => {
     const {fields, handleChange} = useField(initialState);
     const [show, setShow] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const [register, {isLoading, isSuccess}] = useRegisterMutation()
 
     const onSubmitHandler = async (e: SyntheticEvent) => {
         e.preventDefault();
         try {
-            setLoading(true);
-            const request = await axios.post(`${process.env.REACT_APP_BASE_URL_DEV}/users`, fields)
-            request.status === 201 && navigate('/login')
+             await register(fields)
+            isSuccess && navigate('/login')
         } catch (e) {
             console.log(e)
-        } finally {
-            setLoading(false);
         }
     }
+
+    useEffect(() => {
+        isSuccess && navigate('/login')
+    }, [isSuccess])
 
     return (
         <Wrapper>
@@ -56,6 +57,8 @@ export const Register = () => {
                     onChange={handleChange}
                     placeholder='Name'
                     size='md'
+                    minLength={5}
+                    required
                 />
                 <Input
                     name='username'
@@ -63,6 +66,8 @@ export const Register = () => {
                     onChange={handleChange}
                     placeholder='Username'
                     size='md'
+                    minLength={5}
+                    required
                 />
                 <InputGroup size='md'>
                     <Input
@@ -72,6 +77,8 @@ export const Register = () => {
                         pr='4.5rem'
                         type={show ? 'text' : 'password'}
                         placeholder='Enter password'
+                        minLength={5}
+                        required
                     />
                     <InputRightElement width='4.5rem'>
                         <Button h='1.75rem' size='sm' onClick={() => setShow(!show)}>
@@ -81,7 +88,7 @@ export const Register = () => {
                 </InputGroup>
                 <Button
                     type='submit'
-                    isLoading={loading}
+                    isLoading={isLoading}
                     loadingText='Submitting'
                     colorScheme='teal'
                     size='lg'

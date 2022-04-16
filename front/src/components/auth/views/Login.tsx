@@ -1,11 +1,11 @@
-import {useState, SyntheticEvent} from "react";
+import {useState, SyntheticEvent, useEffect} from "react";
 import styled from "styled-components";
 import {Button, Heading, Input, InputGroup, InputRightElement, Link} from '@chakra-ui/react'
 import {Link as RouterLink, useNavigate} from "react-router-dom";
 
 import {useField} from "hooks";
 import {Wrapper} from "components/auth/section/Wrapper";
-import axios from "axios";
+import {useLoginMutation} from "redux/slices/auth/AuthApi";
 
 const StyledForm = styled.form`
   display: flex;
@@ -31,31 +31,32 @@ const initialState: LoginCredentials = {
 }
 
 export const Login = () => {
-    const {fields, handleChange, reset} = useField(initialState);
+    const {fields, handleChange} = useField(initialState);
     const [show, setShow] = useState(false);
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate()
+    const [login, {data, isLoading, isSuccess}] = useLoginMutation()
 
     const onSubmitHandler = async (e: SyntheticEvent) => {
         e.preventDefault();
         try {
-            setLoading(true);
-            const request = await axios.post(`${process.env.REACT_APP_BASE_URL_DEV}/login`, fields)
-
-            if (request) {
-                const {token, username, name, id} = request.data;
-                localStorage.setItem('token', token)
-                localStorage.setItem('username', username)
-                localStorage.setItem('name', name)
-                localStorage.setItem('id', id)
-                navigate('/')
-            }
+             await login(fields)
         } catch (e) {
             console.log(e)
-        } finally {
-            setLoading(false);
         }
     };
+    
+    useEffect(() => {
+        if (isSuccess && data) {
+            const {token, username, name, id} = data;
+            
+            localStorage.setItem('token', token)
+            localStorage.setItem('username', username)
+            localStorage.setItem('name', name)
+            localStorage.setItem('id', id)
+            
+            navigate('/')
+        }
+    }, [isSuccess])
 
     return (
         <Wrapper>
@@ -69,6 +70,8 @@ export const Login = () => {
                     onChange={handleChange}
                     placeholder='Username'
                     size='md'
+                    minLength={5}
+                    required
                 />
                 <InputGroup size='md'>
                     <Input
@@ -78,6 +81,8 @@ export const Login = () => {
                         pr='4.5rem'
                         type={show ? 'text' : 'password'}
                         placeholder='Enter password'
+                        minLength={5}
+                        required
                     />
                     <InputRightElement width='4.5rem'>
                         <Button h='1.75rem' size='sm' onClick={() => setShow(!show)}>
@@ -87,7 +92,7 @@ export const Login = () => {
                 </InputGroup>
                 <Button
                     type='submit'
-                    isLoading={loading}
+                    isLoading={isLoading}
                     loadingText='Logging'
                     colorScheme='teal'
                     size='lg'
