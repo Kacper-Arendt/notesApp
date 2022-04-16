@@ -26,7 +26,7 @@ const initialState = {
 }
 
 export const Register = () => {
-    const {fields, handleChange, reset} = useField(initialState);
+    const {fields, handleChange} = useField(initialState);
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate()
@@ -35,7 +35,7 @@ export const Register = () => {
         e.preventDefault();
         try {
             setLoading(true);
-            const request = await axios.post('http://localhost:3000/users', fields)
+            const request = await axios.post(`${process.env.REACT_APP_BASE_URL_DEV}/users`, fields)
             request.status === 201 && navigate('/login')
         } catch (e) {
             console.log(e)

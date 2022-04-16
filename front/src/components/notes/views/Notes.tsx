@@ -1,7 +1,8 @@
-import {Note, NoteProps} from "../items/Note";
-import {useEffect, useState} from "react";
-import axios from "axios";
 import styled from "styled-components";
+
+import {useGetNotesQuery} from "redux/slices/notes/NotesApi";
+import {Note} from "components/notes/items/Note";
+import {AddNote} from "components/notes/sections/AddNote";
 
 const StyledNotesWrapper = styled.div`
   display: flex;
@@ -11,33 +12,22 @@ const StyledNotesWrapper = styled.div`
 `;
 
 export const Notes = () => {
-    const [notes, setNotes] = useState<NoteProps[]>([]);
-    const token = localStorage.getItem('token')
-
-    useEffect(() => {
-
-        if (token) {
-            axios.get(
-                'http://localhost:3000/notes',
-                {headers: {'authorization': `bearer ${token}`}}).then(resp => {
-                if (resp.data) {
-                    setNotes(resp.data)
-                }
-            })
-        }
-    }, [])
-
+    const {data, isLoading} = useGetNotesQuery();
 
     return (
         <StyledNotesWrapper>
-            {notes.map(({id, content, important, user, date}) =>
-                <Note
-                    id={id}
-                    key={id}
-                    content={content}
-                    important={important}
-                    user={user ?? {}}
-                    date={date}/>)}
+            <AddNote/> 
+            {isLoading ?
+                <h1>Loading</h1>
+                :
+                data?.map(({id, content, important, user, date}) =>
+                    <Note
+                        id={id}
+                        key={id}
+                        content={content}
+                        important={important}
+                        user={user ?? {}}
+                        date={date}/>)}
         </StyledNotesWrapper>
     )
 }

@@ -19,7 +19,13 @@ const StyledForm = styled.form`
   max-width: 25rem;
 `;
 
-const initialState = {
+export interface LoginCredentials {
+    username: string;
+    password: string;
+}
+
+
+const initialState: LoginCredentials = {
     username: '',
     password: '',
 }
@@ -34,7 +40,7 @@ export const Login = () => {
         e.preventDefault();
         try {
             setLoading(true);
-            const request = await axios.post('http://localhost:3000/login', fields)
+            const request = await axios.post(`${process.env.REACT_APP_BASE_URL_DEV}/login`, fields)
 
             if (request) {
                 const {token, username, name, id} = request.data;
