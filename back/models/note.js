@@ -1,28 +1,29 @@
-import mongoose from 'mongoose'
+import {DataTypes, Model} from "sequelize";
+import {sequelize} from "../utils/db.js";
 
-const noteSchema = new mongoose.Schema({
-  content: {
-    type: String,
-    required: true,
-    minLength: 5
-  },
-  date: {
-    type: Date,
-    required: true
-  },
-  important: Boolean,
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }
+export class Note extends Model {}
+
+Note.init({
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    content: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    important: {
+        type: DataTypes.BOOLEAN
+    },
+    date: {
+        type: DataTypes.DATE
+    }
+}, {
+    sequelize,
+    underscored: true,
+    timestamps: false,
+    modelName: 'note'
 })
 
-noteSchema.set('toJSON', {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString()
-    delete returnedObject._id
-    delete returnedObject.__v
-  }
-})
-
-export default mongoose.model('Note', noteSchema)
+Note.sync()

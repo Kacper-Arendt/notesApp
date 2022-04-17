@@ -16,7 +16,9 @@ import logger from './utils/logger.js'
 import { MONGODB_URI } from './utils/config.js'
 import { unknownEndpoint, errorHandler, requestLogger } from './utils/middleware.js'
 
+
 import expressAsyncErrors from 'express-async-errors'
+import {connectToDatabase} from "./utils/db.js";
 
 const app = express()
 
@@ -27,6 +29,7 @@ mongoose.connect(MONGODB_URI).then(() => logger.info('connected to MongoDB'))
     logger.error('error connecting to MongoDB:', err.message)
   })
 
+await connectToDatabase()
 
 app.use(cors())
 app.use(express.static(path.join(__dirname, 'build')))
