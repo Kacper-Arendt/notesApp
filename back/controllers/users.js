@@ -1,19 +1,52 @@
 import bcrypt from 'bcrypt'
 import express from 'express'
 import {User} from "../models/user.js";
+import {Note} from "../models/note.js";
+import {Team} from "../models/team.js";
 
 const userRouter = express.Router()
 
 userRouter.get('/', async (req, res) => {
-    const users = await User.findAll()
+    const users = await User.findAll({
+        include: [
+            {
+                model: Note,
+                attributes: {exclude: ['userId']}
+            },
+            {
+                model: Team,
+                attributes: ['name', 'id'],
+                through: {
+                    attributes: []
+                }
+            }
+        ],
+        attributes: {exclude: ['hash']},
+    })
 
     if (users?.length < 1) {
         return res.status(404).json({error: 'Users not found'})
-    } else res.json(users)
+    } else
+        res.json(users)
 })
 
 userRouter.get('/:id', async (req, res) => {
-    const user = await User.findByPk(req.params.id)
+    const user = await User.findByPk(req.params.id, {
+        include: [
+            {
+                model: Note,
+                attributes: {exclude: ['userId']}
+            },
+            {
+                model: Team,
+                attributes: ['name', 'id'],
+                through: {
+                    attributes: []
+                }
+            }
+        ],
+        attributes: {exclude: ['hash']},
+    })
     if (user) {
         res.json(user)
     } else {
@@ -31,12 +64,11 @@ userRouter.post('/', async (req, res) => {
     }
 
     const saltRounds = 10
-    const passwordHash = await bcrypt.hash(password, saltRounds)
+    const hash = await bcrypt.hash(password, saltRounds)
 
-    const userData = {passwordHash, name, username}
-    const user = await User.create(userData)
+    const user = await User.create({hash, name, username})
 
-    res.status(201).json(user)
+    res.status(201).json({id: user?.dataValues?.id, name, username})
 })
 
 export default userRouter

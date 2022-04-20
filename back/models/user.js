@@ -1,7 +1,8 @@
 import {sequelize} from "../utils/db.js";
 import {DataTypes, Model} from "sequelize";
 
-export class User extends Model {}
+export class User extends Model {
+}
 
 User.init({
     id: {
@@ -14,7 +15,7 @@ User.init({
         unique: true,
         allowNull: false
     },
-    passwordHash: {
+    hash: {
         type: DataTypes.STRING,
         allowNull: false
     },
@@ -28,5 +29,3 @@ User.init({
     timestamps: false,
     modelName: 'user'
 })
-
-User.sync()

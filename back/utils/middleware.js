@@ -1,4 +1,6 @@
 import logger from './logger.js'
+import jwt from "jsonwebtoken";
+import {SECRET} from "./config.js";
 
 export const requestLogger = (request, response, next) => {
   logger.info('Method:', request.method)
@@ -26,4 +28,18 @@ export const errorHandler = (error, request, response, next) => {
   }
 
   next(error)
+}
+
+export const tokenExtractor = (req, res, next) => {
+  const authorization = req.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    try {
+      req.decodedToken = jwt.verify(authorization.substring(7), SECRET)
+    } catch{
+      res.status(401).json({ error: 'token invalid' })
+    }
+  }  else {
+    res.status(401).json({ error: 'token missing' })
+  }
+  next()
 }

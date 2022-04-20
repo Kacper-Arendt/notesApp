@@ -1,6 +1,7 @@
 import express from 'express'
-import jwt from 'jsonwebtoken'
 import {Note} from "../models/note.js";
+import {User} from "../models/user.js";
+import {tokenExtractor} from "../utils/middleware.js";
 
 const router = express.Router()
 
@@ -9,22 +10,19 @@ const noteFinder = async (req, res, next) => {
     next()
 }
 
-const getTokenFrom = request => {
-    const authorization = request.get('authorization')
-
-    if (authorization && authorization.toLowerCase().startsWith('bearer')) {
-        return authorization.substring(7)
-    }
-    return null
-}
-
 // GET
-router.get('/', async (request, response) => {
-    const notes = await Note.findAll()
+router.get('/', async (req, res) => {
+    const notes = await Note.findAll({
+        attributes: {exclude: ['userId']},
+        include: {
+            model: User,
+            attributes: ['name']
+        },
+    })
     if (!notes) {
-        response.status(404).end()
+        res.status(404).end()
     } else {
-        response.json(notes)
+        res.json(notes)
     }
 })
 
@@ -46,19 +44,17 @@ router.delete('/:id', noteFinder, async (req, res) => {
 })
 
 // POST
-router.post('/', async (req, res) => {
+router.post('/', tokenExtractor, async (req, res) => {
     if (!req.body?.content) {
         return res.status(400).json({error: 'Content Not Found'})
     }
 
-    const token = getTokenFrom(req)
-    const decodedToken = jwt.verify(token, process.env.SECRET)
-    !decodedToken && res.status(401).json({error: 'Token is missing or invalid'})
+    const user = await User.findByPk(req.decodedToken.id)
 
-    const note = await Note.create(req.body)
+    const note = await Note.create({...req.body, userId: user.id, date: new Date()})
 
     res.status(201).json(note)
-
+    
 })
 
 // PUT

@@ -25,5 +25,3 @@ Note.init({
     timestamps: false,
     modelName: 'note'
 })
-
-Note.sync()
