@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
         attributes: {exclude: ['userId']},
         include: {
             model: User,
-            attributes: ['name']
+            attributes: {exclude: ['hash']}
         },
     })
     if (!notes) {
@@ -54,7 +54,7 @@ router.post('/', tokenExtractor, async (req, res) => {
     const note = await Note.create({...req.body, userId: user.id, date: new Date()})
 
     res.status(201).json(note)
-    
+
 })
 
 // PUT

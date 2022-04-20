@@ -27,7 +27,7 @@ export interface NoteProps {
     important: string,
     user: {
         name: string,
-        id: string
+        id: number
     },
     date: string
 }
@@ -42,7 +42,7 @@ export const Note = ({content, important, user, date, id}: NoteProps) => {
         <StyledNote key={id}>
             {important && <Badge colorScheme='green'>Important</Badge>}
 
-            {user?.id === userID &&
+            {user?.id === Number(userID) &&
                 <StyledBadge onClick={deleteNoteHandler} variant='outline' colorScheme='red'>Delete</StyledBadge>}
 
             {content && <Text fontSize='sm'>{content}</Text>}
