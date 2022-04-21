@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "notesnode",
+    "prod": "notesnode"
+  },
+  "targets": {}
+}
